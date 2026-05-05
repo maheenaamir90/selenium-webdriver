@@ -1,32 +1,35 @@
 pipeline {
     agent any
+
     environment {
         IMAGE_NAME = "selenium-test"
     }
+
     stages {
-        stage('Build Docker Image') {
+
+        stage('Checkout') {
             steps {
-                script {
-                    // Build the Docker image
-                    sh '''docker build -t $IMAGE_NAME .
-                          docker images'''                    
-                }
+                checkout scm
             }
         }
-    stage('Run Selenium Tests') {
+
+        stage('Build Docker Image') {
             steps {
-                script {
-                    // Run the Docker container and execute the tests
-                    // sh 'docker run --rm ${env.IMAGE_NAME}'
-                     sh 'docker run $IMAGE_NAME'
-                }
+                sh 'docker build -t $IMAGE_NAME .'
+            }
+        }
+
+        stage('Run Selenium Tests') {
+            steps {
+                sh 'docker run --rm $IMAGE_NAME'
             }
         }
     }
-     post {
-            always {
-                // Cleanup: remove any unused images, volumes, etc.
-                sh 'docker system prune -af'
-            }
+
+    post {
+        always {
+            sh 'docker system prune -af'
         }
+    }
 }
+
